@@ -1,0 +1,145 @@
+## ------------------------------------------------------------------------
+#Load tidyverse library
+library(tidyverse)
+ggplot2::mpg
+
+
+## ------------------------------------------------------------------------
+ggplot(data=mpg)+
+        geom_point(mapping = aes(x = displ, y = hwy))
+        
+
+
+## ------------------------------------------------------------------------
+ggplot(data = mpg) +
+        geom_point(mapping = aes(x = displ, y = hwy, color = class))
+
+
+## ------------------------------------------------------------------------
+ggplot(data = mpg)+
+        geom_point(mapping = aes(x=displ, y=hwy, shape = class))
+
+
+## ------------------------------------------------------------------------
+ggplot(data = mpg)+
+        geom_point(mapping = aes (x = displ, y = hwy, color = 'blue'))
+
+# fix
+ggplot(data = mpg)+
+        geom_point(mapping = aes(x = displ, y = hwy), color = 'blue')
+
+#another way
+ggplot(mpg, aes(displ, hwy))+ # can't do color, smooths over whole data
+        geom_point()
+
+
+## ------------------------------------------------------------------------
+ggplot(data =mpg)+
+        geom_point(mapping = aes(x = displ, y = hwy))+
+        #facet_wrap(~class, nrow = 2)
+        facet_wrap(~class, nrow = 1)
+         #facet_wrap(~class) #comparing with facet_grid (. ~ class)
+        #facet_wrap(~ manufacturer)
+
+
+## ------------------------------------------------------------------------
+ggplot(data = mpg)+
+        geom_point(mapping = aes(x = displ, y = hwy))+
+        facet_grid(cyl ~ class)
+        
+#without one var in facet
+ggplot(data = mpg)+
+        geom_point(mapping = aes(x = displ, y = hwy))+
+        #facet_grid(. ~ cyl) 
+         facet_grid(. ~ class) #comparing with facet_wrap(~ class)
+
+# reverse
+ggplot(mpg, aes(displ, hwy)) + #coding this way is much cleaner and readable
+        geom_point() +
+        facet_grid(class ~ .)
+
+
+## ------------------------------------------------------------------------
+ggplot(data = mpg)+
+        geom_point(mapping = aes(x = drv, y = cyl))
+
+
+## ------------------------------------------------------------------------
+ggplot(mpg, aes(displ, hwy))+
+        geom_smooth()
+
+#linetype
+ggplot(mpg, aes(displ, hwy, linetype = drv, color = drv)) +
+        geom_smooth()+
+        geom_point()
+
+#mapping for the local geom - geom_point
+ggplot(mpg, aes(displ, hwy)) +
+        geom_point(aes(color = class)) +
+        geom_smooth()
+
+#filtering
+ggplot(mpg, aes(displ,hwy)) +
+        #dont show legend. has to be layer specific i.e if coded at geo_smooth legend will show still
+        geom_point(aes(color = class), show.legend = FALSE) +
+        #can't do geom_smooth(filter(mpg, class == "x"))
+        geom_smooth(data = filter(mpg, class == "midsize")) # se - confidence interval 
+        
+
+
+## ------------------------------------------------------------------------
+#use diamonds dataset
+ggplot2::diamonds
+
+#bar plot of different cuts
+#geom_bar uses stat_count to get # of instances of a data
+ggplot(diamonds, aes(cut))+
+        geom_bar()
+
+#or use stat_count
+ggplot(diamonds, aes(cut))+
+        stat_count()   
+
+
+## ------------------------------------------------------------------------
+# calling group = 1 prevents the height of all the bar 1.  
+ggplot(diamonds, aes(cut, after_stat(prop), group = 1)) +
+        geom_bar()
+
+
+## ------------------------------------------------------------------------
+ggplot(diamonds, aes(x, fill = cut))+ #mistakenly x=x, what happened?
+        geom_bar()
+
+ggplot(diamonds, aes(cut, fill = cut)) +
+        geom_bar()
+
+#bar count
+ggplot(diamonds)+
+        geom_bar(aes(cut, fill = cut))
+
+# this give the same chart
+ggplot(diamonds, aes(cut, fill = cut))+
+        geom_bar()
+
+# intuitively, what happens if we use color aes
+ggplot(diamonds, aes(cut, color = cut))+
+        geom_bar()
+
+ggplot(diamonds) +
+        geom_bar(aes(cut, color = cut))
+
+
+
+
+
+
+## ------------------------------------------------------------------------
+#position = fill provides the most discernible viz
+
+ggplot(diamonds)+
+        geom_bar(aes(cut, fill = clarity), position = "dodge") # this gives count
+
+ggplot(diamonds)+
+        geom_bar(aes(cut, fill = clarity), position = "fill") # this gives proportion with bar height of 1. 
+

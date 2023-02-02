@@ -1,0 +1,225 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+#Load tidyverse library
+library(tidyverse)
+ggplot2::mpg
+```
+
+## Scatter Plots
+
+relationship between engine size, displ column, and gas mileage, hwy column
+
+```{r}
+ggplot(data=mpg)+
+        geom_point(mapping = aes(x = displ, y = hwy))
+        
+```
+
+adding class to color
+
+```{r}
+ggplot(data = mpg) +
+        geom_point(mapping = aes(x = displ, y = hwy, color = class))
+```
+
+by shape - missing data - suv. only six shape at a time. ?
+
+```{r}
+ggplot(data = mpg)+
+        geom_point(mapping = aes(x=displ, y=hwy, shape = class))
+```
+
+issue with this, get color blue
+
+```{r}
+ggplot(data = mpg)+
+        geom_point(mapping = aes (x = displ, y = hwy, color = 'blue'))
+
+# fix
+ggplot(data = mpg)+
+        geom_point(mapping = aes(x = displ, y = hwy), color = 'blue')
+
+#another way
+ggplot(mpg, aes(displ, hwy))+ # can't do color, smooths over whole data
+        geom_point()
+```
+
+using facets to add additional var,facets by single var, categorical var
+
+```{r}
+ggplot(data =mpg)+
+        geom_point(mapping = aes(x = displ, y = hwy))+
+        #facet_wrap(~class, nrow = 2)
+        facet_wrap(~class, nrow = 1)
+        #facet_wrap(vars(class), nrow = 2) #can do this instead of tilda ~
+         #facet_wrap(~class) #comparing with facet_grid (. ~ class)
+        #facet_wrap(~ manufacturer)
+```
+
+using facets plot on the combination of two discrete/categorical variables
+
+```{r}
+ggplot(data = mpg)+
+        geom_point(mapping = aes(x = displ, y = hwy))+
+        facet_grid(cyl ~ class)
+        #facet_grid(vars(cyl, class)) # no can't do
+
+        
+#without one var in facet
+ggplot(data = mpg)+
+        geom_point(mapping = aes(x = displ, y = hwy))+
+        #facet_grid(. ~ cyl) 
+         facet_grid(. ~ class) #comparing with facet_wrap(~ class)
+
+# reverse
+ggplot(mpg, aes(displ, hwy)) + #coding this way is much cleaner and readable
+        geom_point() +
+        facet_grid(class ~ .)
+```
+
+plotting drv and cycl with 3 factors
+
+```{r}
+ggplot(data = mpg)+
+        geom_point(mapping = aes(x = drv, y = cyl))
+```
+
+switching the layer - geom
+
+```{r}
+ggplot(mpg, aes(displ, hwy))+
+        geom_smooth()
+
+#linetype
+ggplot(mpg, aes(displ, hwy, linetype = drv , color = drv)) +
+        #A continuous variable cannot be mapped to the linetype aesthetic
+        geom_smooth()+
+        geom_point()
+
+#mapping for the local geom - geom_point/smooth
+ggplot(mpg, aes(displ, hwy)) +
+        geom_point(aes(color = class)) +
+        geom_smooth(color = 'red')
+
+#filtering
+ggplot(mpg, aes(displ,hwy)) +
+        #dont show legend. has to be layer specific i.e if coded at geo_smooth legend will show still
+        geom_point(aes(color = class), show.legend = TRUE) +
+        #can't do geom_smooth(filter(mpg, class == "x"))
+        geom_smooth(data = filter(mpg, class == "suv")) # se - confidence interval 
+
+ggplot(data = filter(mpg, class == "suv" | class == "compact"), aes(displ,hwy)) +
+        #dont show legend. has to be layer specific i.e if coded at geo_smooth legend will show still
+        geom_point(aes(color = class), show.legend = TRUE) +
+        #can't do geom_smooth(filter(mpg, class == "x"))
+        geom_smooth(aes(linetype = class)) # se - confidence interval 
+
+```
+
+Avoid over plotting
+
+```{r}
+#avoid overplotting data. Add some randoom noise to each pt to spread the points out.
+#position = jitter
+ggplot(mpg, aes(displ, hwy, color = class))+
+        geom_point(position = "jitter")
+
+#or use geom_jitter
+ggplot(mpg, aes(displ, hwy, color = class))+
+        geom_jitter()
+
+ggplot(mpg, aes(displ, hwy)) +
+        geom_point(aes(color = class),position = "jitter") +
+        geom_smooth()
+```
+
+## Bar Charts
+
+```{r}
+#use diamonds dataset
+ggplot2::diamonds
+
+#bar plot of different cuts
+#geom_bar uses stat_count to get # of instances of a data
+ggplot(diamonds, aes(cut))+
+        geom_bar()
+
+#or use stat_count
+ggplot(diamonds, aes(cut))+
+        stat_count()   
+
+#adding color
+ggplot(diamonds, aes(cut, fill = cut)) +
+        geom_bar()
+```
+
+geom_bar bar plot gives count of samples of each type. count is done by ggplot internal stat_count and geom_bar gives the coordinates of the rectangles that give the shape to each bar.
+
+stat_count provides two internal variables count and prop referring to count and proportion respectively.
+
+       use after_stat() to envoke count and prop
+
+```{r}
+# calling group = 1 prevents the height of all the bar 1.  
+ggplot(diamonds, aes(cut, after_stat(prop), group = 1)) + # group = 0?
+        geom_bar()
+```
+
+#### Positions
+
+```{r}
+ggplot(diamonds, aes(x, fill = cut))+ #mistakenly x=x, what happened?
+        geom_bar()
+
+#do this
+ggplot(diamonds, aes(cut, fill = cut)) +
+        geom_bar()
+
+#bar count
+ggplot(diamonds)+
+        geom_bar(aes(cut, fill = cut))
+
+# this give the same chart
+ggplot(diamonds, aes(cut, fill = cut))+
+        geom_bar()
+
+# intuitively, what happens if we use color aes
+ggplot(diamonds, aes(cut, color = cut))+
+        geom_bar()
+
+ggplot(diamonds) +
+        geom_bar(aes(cut, color = cut))
+```
+
+#### Positions - stacked bar chart
+
+```{r}
+#stacked chart is default when add additional var to the aes layer
+
+ggplot(diamonds, aes(cut, fill = color))+
+               geom_bar()
+```
+
+to avoid default stacked bar chart choose among
+
+       position =  "identity", "dodge" or "fill"
+       
+
+```{r}
+#position = dodge, fill
+
+ggplot(diamonds)+
+        geom_bar(aes(cut, fill = clarity), position = "dodge") # this gives count
+
+#see what happens when you do
+ggplot(diamonds, aes(cut, fill = clarity), position = "dodge")+         geom_bar() # need to add position in geom layer
+
+ggplot(diamonds)+
+        geom_bar(aes(cut, fill = clarity), position = "fill") # this gives proportion with bar height of 1. 
+```
